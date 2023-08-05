@@ -1,8 +1,8 @@
 #include <esp_http_server.h>
 #include <esp_log.h>
 #include "config.h"
-#include "http/routing/base.h"
-#include "http/routing/static.h"
+#include "http/route/base.h"
+#include "http/route/static.h"
 
 httpd_handle_t http_init(void) {
     ESP_LOGI(TAG, "start http server");
