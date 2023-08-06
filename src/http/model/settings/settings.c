@@ -1,8 +1,10 @@
 #include <nvs.h>
+#include <esp_log.h>
 #include "cJSON.h"
 
 #define NVS_NAMESPACE "settings"
 #define JSON_KEY "settings_json"
+#define TAG "SETTINGS"
 
 const char* get_default_settings() {
     return
@@ -72,47 +74,57 @@ bool save_settings_to_nvs(const char *json_str) {
 
     err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
     if (err != ESP_OK) {
+        ESP_LOGI(TAG, "open settings storage...FAILED");
         return false;
     }
 
     err = nvs_set_str(nvs_handle, JSON_KEY, json_str);
     if (err != ESP_OK) {
+        ESP_LOGI(TAG, "set settings...FAILED");
         nvs_close(nvs_handle);
         return false;
     }
 
+    ESP_LOGI(TAG, "set settings...OK");
     nvs_close(nvs_handle);
     return true;
 }
 
 char* read_settings_from_nvs() {
     nvs_handle_t nvs_handle;
-    esp_err_t ret = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
-    if (ret != ESP_OK) {
+    esp_err_t err;
+
+    err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
+    if (err != ESP_OK) {
+        ESP_LOGI(TAG, "open settings storage...FAILED");
         return NULL;
     }
 
-    size_t required_size;
-    ret = nvs_get_blob(nvs_handle, JSON_KEY, NULL, &required_size);
-    if (ret != ESP_OK) {
+    size_t settings_size;
+    err = nvs_get_str(nvs_handle, JSON_KEY, NULL, &settings_size);
+    if (err != ESP_OK) {
+        ESP_LOGI(TAG, "get settings size...FAILED");
         nvs_close(nvs_handle);
         return NULL;
     }
 
-    char *json_str = (char *) malloc(required_size);
-    if (json_str == NULL) {
+    char *settings = (char *) malloc(settings_size);
+    if (settings == NULL) {
+        ESP_LOGI(TAG, "malloc settings buffer...FAILED");
         nvs_close(nvs_handle);
         return NULL;
     }
 
-    ret = nvs_get_blob(nvs_handle, JSON_KEY, json_str, &required_size);
-    if (ret != ESP_OK) {
-        free(json_str);
+    err = nvs_get_str(nvs_handle, JSON_KEY, settings, &settings_size);
+    if (err != ESP_OK) {
+        ESP_LOGI(TAG, "get settings...FAILED");
+        free(settings);
         nvs_close(nvs_handle);
         return NULL;
     }
 
     nvs_close(nvs_handle);
 
-    return json_str;
+    ESP_LOGI(TAG, "get settings...OK");
+    return settings;
 }

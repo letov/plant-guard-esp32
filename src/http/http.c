@@ -4,9 +4,9 @@
 #include "http/route/base.h"
 #include "http/route/static.h"
 
-httpd_handle_t http_init(void) {
-    ESP_LOGI(TAG, "start http server");
+#define TAG "HTTP"
 
+httpd_handle_t http_init(void) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     httpd_handle_t server = NULL;
 
@@ -15,5 +15,6 @@ httpd_handle_t http_init(void) {
         static_routing_register(server);
     }
 
+    ESP_LOGI(TAG, "start http server...OK");
     return server;
 }
